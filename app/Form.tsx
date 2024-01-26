@@ -25,7 +25,6 @@ export default function Form() {
 
       <label htmlFor="description">description</label>
       <textarea id="description" name="description" rows={5} cols={33}>
-        {" "}
         Enter description here...
       </textarea>
       <label htmlFor="start-date">start date</label>
