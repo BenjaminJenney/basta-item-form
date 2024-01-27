@@ -1,4 +1,31 @@
+"use client";
+
+import { type PutBlobResult } from "@vercel/blob";
+import { upload } from "@vercel/blob/client";
+import { useState, useRef } from "react";
+
 export default function Form() {
+  const inputFileRef = useRef<HTMLInputElement>(null);
+  const [blob, setBlob] = useState<PutBlobResult | null>(null);
+
+  const uploadImageBlob = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    event.preventDefault();
+
+    if (!inputFileRef.current?.files) {
+      throw new Error("No file selected");
+    }
+
+    const file = inputFileRef.current.files[0];
+    const newBlob = await upload(file.name, file, {
+      access: "public",
+      handleUploadUrl: "/blob-api",
+    });
+
+    setBlob(newBlob);
+  };
+
   return (
     <form encType="multipart/form-data" className="grid">
       <label htmlFor="images">Images</label>
@@ -7,6 +34,8 @@ export default function Form() {
         type="file"
         accept="image/*"
         name="images[]"
+        onChange={uploadImageBlob}
+        ref={inputFileRef}
         multiple
       />
       <label htmlFor="title">Title</label>
@@ -50,6 +79,31 @@ export default function Form() {
       />
       <label htmlFor="reserve">reserve</label>
       <input id="reserve" type="number" placeholder="reserve" name="reserve" />
+      <button type="submit">create</button>
     </form>
   );
 }
+
+/* mutation
+      `mutation CREATE_ITEM($accountId: String!, $input: CreateItemInput!) {
+  createItem(accountId: $accountId, input: $input) {
+    id
+    saleId
+    images {
+      id
+      url
+      order
+    }
+    description
+    title
+    valuationAmount
+    valuationCurrency
+  }
+}`; */
+
+/* item
+      saleId: saleId,
+        title: item.title ?? '',
+        description: item.description ?? '',
+        startingBid: options.startingBid,
+        reserve: options.reserve */

@@ -1,4 +1,4 @@
-import {basta} from './lib/basta';
+import {basta} from '../lib/basta';
 
 function storeImageAsBlob() {
   
