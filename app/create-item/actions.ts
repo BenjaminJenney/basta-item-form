@@ -2,6 +2,8 @@
 
 import { z } from "zod";
 import { basta } from "../lib/basta";
+import { sql } from "@vercel/postgres";
+
 //2018-06-12T19:30
 const createItemFormValidator = z.object({
   title: z.string({
