@@ -10,8 +10,28 @@ import { Sale } from "@bastaai/basta-admin-js/types/sale";
 const FormSchema = z.object({
   title: z.string(),
   description: z.string(),
-  openDate: z.coerce.string(),
-  closingDate: z.coerce.string(),
+  openDate: z
+  .coerce
+  .string()
+  .refine((val) => val.length === 16, {
+    message: "datetime-local is wrong length",
+  })
+  .refine(
+    (val) =>
+      val[4] === "-" && val[7] === "-" && val[10] === "T" && val[13] === ":",
+    { message: "format is not HTMLInput datetime-local format" }
+  ),
+  closingDate: z
+  .coerce
+  .string()
+  .refine((val) => val.length === 16, {
+    message: "datetime-local is wrong length",
+  })
+  .refine(
+    (val) =>
+      val[4] === "-" && val[7] === "-" && val[10] === "T" && val[13] === ":",
+    { message: "format is not HTMLInput datetime-local format" }
+  ),
 });
 
 const defaultSaleOptions = {
@@ -26,7 +46,8 @@ const defaultSaleOptions = {
   closingTimeCountdown: 60000,
 };
 
-export async function createSale(
+/** Returns a basta Sale object */
+export async function createBastaAuction(
   formData: FormData,
   options: DefaultSaleOptions = defaultSaleOptions
 ) {
@@ -57,9 +78,9 @@ export async function createSale(
     throw new Error('could not make sale!')
   }
 
-  console.log(`sale made successfully! your saleId is ${ sale.id}`)
+  console.log(`sale made successfully! your saleId is ${ sale.id }`)
   /* Since are not updating the data displayed in any route yet,
    you do not want to clear this cache and trigger a new request to the server. 
    If you do display this data at some point you can do this with the revalidatePath function from Next.js */
-   redirect('/create-item');
+   //redirect('/create-item');
 }

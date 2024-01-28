@@ -1,8 +1,8 @@
 import Image from "next/image";
-import Form from "./create-item/createItemForm";
+import Form from "./create-item/item-form";
 
 export default function Home() {
   return (
-    <Form />
+    <h2>No ones home...</h2>
   );
 }

@@ -1,8 +1,8 @@
-import { createSale } from "./actions";
+import { createBastaAuction } from "./actions";
 
 export default function SaleForm() {
   return (
-    <form action={createSale} className="grid col-span-1">
+    <form action={createBastaAuction} className="grid col-span-1">
       <label htmlFor="title">Sale title</label>
       <input id="title" type="text" placeholder="title of your sale" name="title"/>
       <label htmlFor="description">Sale description</label>
