@@ -16,6 +16,15 @@
   }
 }
 
+@layer base {
+  form {
+    @apply bg-gray-500;
+  }
+  input {
+    @apply text-black;
+  }
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(

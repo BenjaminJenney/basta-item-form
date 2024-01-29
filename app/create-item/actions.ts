@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { basta } from "../lib/basta";
 import { sql } from "@vercel/postgres";
+import { PutBlobResult } from "@vercel/blob";
 
 //2018-06-12T19:30
 const createItemFormValidator = z.object({
@@ -23,16 +24,64 @@ const createItemFormValidator = z.object({
     required_error: 'year is required',
     invalid_type_error: 'year must be a number',
   }),
+
   /* TODO: finish validation schema */
 });
 
 /** Returns a SaleItem and updates DB with create-item entries
  * @param formData 
- * @remarks SaleItem
+ * @remarks SaleItem = {
+  allowedBidTypes?: BidType[] | null | undefined;
+
+  // Get list of bids for this item 
+
+  bids: Bid[];
+
+  // Current bid amount for the item as minor currency unit. 
+
+  currentBid?: number | null | undefined;
+  
+  // Scheduled closing timestamp for the item. 
+  
+  dates: ItemDates;
+  
+  // Item description 
+  
+  description?: string | null | undefined;
+  
+  // High Estimate of item in minor currency unit. 
+  
+  highEstimate: number;
+  //Id of an item. 
+  id: string;
+  // Images attached to saleItem 
+  images: Image[] | null | undefined;
+  // Item number 
+  itemNumber: number;
+  //Current leader (user id) for the item 
+  leaderId?: string | null | undefined;
+  // Low Estimate of item in minor currency unit.
+  lowEstimate: number;
+  // Reserve on the item in minor currency unit.
+  reserve?: number | null | undefined;
+  // Sale id, as items can be created without having to be associated to a sale.
+  saleId: string;
+  //Starting bid for the item in minor currency unit.
+  startingBid?: number | null | undefined;
+  // Status of the item 
+  status: ItemStatus;
+  // Item title 
+  title?: string | null | undefined;
+  //Number of bids that have been placed on the item 
+  totalBids: number;
+}; 
 */
-export async function createBastaItemForSale(itemFormData: FormData) {
+export async function createBastaItemForSale(blob: PutBlobResult, itemFormData: FormData) {
   
   const itemData = Object.fromEntries(itemFormData);
+  console.log('itemData: ', itemData);
+  console.log('blob: ', blob);
+  
 
 }
 
@@ -43,44 +92,4 @@ export async function createBastaItemForSale(itemFormData: FormData) {
 //     startingBid: 1000,
 //     reserve: 200000000,
 
-// /* 
-// export type SaleItem = {
-//   /**
-//    * Allowed BidTypes on the item.
-//    * Currently only a single BidType is allowed per item.
-//    * Defaults to allowing only Max bids if not supplied.
-//    */
-//   allowedBidTypes?: BidType[] | null | undefined;
-//   /** Get list of bids for this item */
-//   bids: Bid[];
-//   /** Current bid amount for the item as minor currency unit. */
-//   currentBid?: number | null | undefined;
-//   /** Scheduled closing timestamp for the item. */
-//   dates: ItemDates;
-//   /** Item description */
-//   description?: string | null | undefined;
-//   /** High Estimate of item in minor currency unit. */
-//   highEstimate: number;
-//   /** Id of an item. */
-//   id: string;
-//   /** Images attached to saleItem */
-//   images: Image[] | null | undefined;
-//   /** Item number */
-//   itemNumber: number;
-//   /** Current leader (user id) for the item */
-//   leaderId?: string | null | undefined;
-//   /** Low Estimate of item in minor currency unit. */
-//   lowEstimate: number;
-//   /** Reserve on the item in minor currency unit. */
-//   reserve?: number | null | undefined;
-//   /** Sale id, as items can be created without having to be associated to a sale. */
-//   saleId: string;
-//   /** Starting bid for the item in minor currency unit. */
-//   startingBid?: number | null | undefined;
-//   /** Status of the item */
-//   status: ItemStatus;
-//   /** Item title */
-//   title?: string | null | undefined;
-//   /** Number of bids that have been placed on the item */
-//   totalBids: number;
-// }; */
+

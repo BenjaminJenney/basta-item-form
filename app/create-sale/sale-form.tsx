@@ -2,15 +2,16 @@ import { createBastaAuction } from "./actions";
 
 export default function SaleForm() {
   return (
-    <form action={createBastaAuction} className="grid col-span-1">
+    <form action={createBastaAuction} className="w-full">
       <label htmlFor="title">Sale title</label>
-      <input id="title" type="text" placeholder="title of your sale" name="title"/>
+      <input id="title" type="text" placeholder="title of your sale" name="title" defaultValue={`test sale`}/>
       <label htmlFor="description">Sale description</label>
       <input
         id="description"
         type="text"
         placeholder="description of your sale"
         name="description"
+        defaultValue={`my test sale`}
       />
       <label htmlFor="opening-date"> opening date </label>
       <input
@@ -30,6 +31,32 @@ export default function SaleForm() {
     </form>
   );
 }
+/* {
+  '$ACTION_ID_2f1c59a13c66f7faf626a8f2e37dd21df54868f2': '',
+  title: 'test sale',
+  description: 'my awesome sale',
+  openingDate: '2024-01-29T08:02',
+  closingDate: '2024-01-30T08:00'
+}
+{
+  accountId: 'b8a7f554-30f2-415a-afbd-9e3fe5a033c9',
+  closingTimeCountdown: 60000,
+  dates: {
+    __typename: 'SaleDates',
+    closingDate: '2024-01-30T08:00:00Z',
+    openDate: '2024-01-29T08:02:00Z'
+  },
+  id: 'ce01e56e6-1c14660000070004',
+  images: [],
+  items: [],
+  participants: [],
+  sequenceNumber: 0,
+  title: 'test sale',
+  closingMethod: 'OVERLAPPING',
+  description: 'my awesome sale',
+  incrementTable: { __typename: 'BidIncrementTable', rules: [ [Object], [Object] ] },
+  status: 'UNPUBLISHED'
+} */
 
 /* query
     createSale: {

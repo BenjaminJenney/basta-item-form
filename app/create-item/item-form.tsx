@@ -4,13 +4,10 @@ import { type PutBlobResult } from "@vercel/blob";
 import { upload } from "@vercel/blob/client";
 import { useState, useRef } from "react";
 import { createBastaItemForSale } from "./actions";
-import { basta } from "../lib/basta";
-
-basta.item
 
 export default function ItemForm() {
   const inputFileRef = useRef<HTMLInputElement>(null);
-  const [blob, setBlob] = useState<PutBlobResult | null>(null);
+  const [blob, setBlob] = useState<any>([]);
   /** Uploads image file(s) to vercel-blob store */
   const uploadImageBlob = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -20,46 +17,48 @@ export default function ItemForm() {
     if (!inputFileRef.current?.files) {
       throw new Error("No file selected");
     }
-
-
     const file = inputFileRef.current.files[0];
     const newBlob = await upload(file.name, file, {
       access: "public",
       handleUploadUrl: '/blob-api',
     });
-
-    setBlob(newBlob);
+    setBlob([...blob, newBlob]);
   };
 
+  const createBastaItemForSaleWithBlob = createBastaItemForSale.bind(null, blob);
+
   return (
-    <form encType="multipart/form-data" className="grid" action={createBastaItemForSale}>
-      <label htmlFor="images">Images</label>
+    <div className="w-full">
+    <form encType="multipart/form-data" className="" action={createBastaItemForSaleWithBlob}> 
+      <label htmlFor="images" className="">Images</label>
       <input
         id="images"
         type="file"
         accept="image/*"
         name="images[]"
-        onChange={uploadImageBlob}
         ref={inputFileRef}
         multiple
+        onChange={uploadImageBlob}
+        className=""
       />
-      <label htmlFor="title">Title</label>
+      <label htmlFor="title" className="">Title</label>
       <input id="title" type="text" placeholder="title" name="title" defaultValue='test item'/>
-      <label htmlFor="medium">Medium</label>
-      <input id="medium" type="text" placeholder="medium" name="medium" defaultValue='acryllic'/>
-      <label htmlFor="dimensions">dimensions</label>
+      <label htmlFor="medium" className="">Medium</label>
+      <input id="medium" type="text" placeholder="medium" name="medium" defaultValue='acryllic' className=""/>
+      <label htmlFor="dimensions" className="">dimensions</label>
       <input
         id="dimensions"
         type="text"
         placeholder="hXwXd"
         name="dimensions"
         defaultValue='10X10X10'
+        className=""
       />
       <label htmlFor="year">year</label>
       <input id="year" type="number" name="year" defaultValue='1997'/>
 
       <label htmlFor="description">description</label>
-      <textarea id="description" name="description" defaultValue="your auction description" rows={5} cols={33} />
+      <textarea id="description" name="description" defaultValue="your auction description" rows={5} cols={33} className="text-black"/>
       {/*<label htmlFor="start-date">start date</label> 
       <input
         id="start-date"
@@ -86,6 +85,7 @@ export default function ItemForm() {
       <input id="reserve" type="number" placeholder="reserve" name="reserve" defaultValue='30000' />
       <button type="submit">create</button>
     </form>
+    </div>
   );
 }
 // /* 

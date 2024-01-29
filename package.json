@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "init-tables": "node -r dotenv/config ./app/db/init-tables.js"
+    "init-tables": "node -r dotenv/config ./app/db/init-tables.js",
+    "init": "node -r dotenv/config ./app/db/init.js"
   },
   "dependencies": {
     "@bastaai/basta-admin-js": "^0.1.0-beta.118",
