@@ -5,9 +5,10 @@ import { upload } from "@vercel/blob/client";
 import { useState, useRef } from "react";
 import { createBastaItemForSale } from "./actions";
 
-export default function ItemForm() {
+export default function ItemForm({saleid}: {saleid: string}) {
   const inputFileRef = useRef<HTMLInputElement>(null);
-  const [blob, setBlob] = useState<any>([]);
+  const [blobs, setBlob] = useState<PutBlobResult[]>([]);
+
   /** Uploads image file(s) to vercel-blob store */
   const uploadImageBlob = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -22,10 +23,9 @@ export default function ItemForm() {
       access: "public",
       handleUploadUrl: '/blob-api',
     });
-    setBlob([...blob, newBlob]);
+    setBlob([...blobs, newBlob]);
   };
-
-  const createBastaItemForSaleWithBlob = createBastaItemForSale.bind(null, blob);
+  const createBastaItemForSaleWithBlob = createBastaItemForSale.bind(null, blobs, saleid);
 
   return (
     <div className="w-full">
@@ -78,7 +78,7 @@ export default function ItemForm() {
         id="start-bid"
         type="number"
         placeholder="start-bid"
-        name="start-bid"
+        name="startBid"
         defaultValue='20000'
       />
       <label htmlFor="reserve">reserve</label>
@@ -130,15 +130,7 @@ export default function ItemForm() {
 //   totalBids: number;
 // }; */
 
-// /** Image object */
-// export type Image = {
-//   /** ID of the image, UUID string */
-//   id: string;
-//   /** DisplayOrder for image */
-//   order: number;
-//   /** Image URL */
-//   url: string;
-// };
+
 
 
 /* mutation

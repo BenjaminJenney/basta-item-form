@@ -7,6 +7,7 @@ import { z } from "zod";
 import { DefaultSaleOptions } from "../definitions";
 import { redirect } from "next/navigation";
 import { Sale } from "@bastaai/basta-admin-js/types/sale";
+import { revalidatePath } from "next/cache";
 
 const FormSchema = z.object({
   title: z.string(),
@@ -69,18 +70,23 @@ export async function createBastaAuction(
   };
   //console.log('input: ', input);
   const sale: Sale = await basta.sale.create(input);
- 
+
   if (!sale) {
     throw new Error("could not make sale!");
   }
   console.log(`sale made successfully! your saleId is ${sale.id}`);
-
   try {
-    await sql`INSERT INTO sale (saleId) VALUES (${sale.id})`;
-    return sale;
+    await sql`INSERT INTO sale (saleId, created_date, open_date, close_date) VALUES (${
+      sale.id
+    }, ${new Date().toISOString()}, ${sale.dates.openDate}, ${
+      sale.dates.closingDate
+    });`;
   } catch (error) {
     console.error("insertion to sale table", error);
   }
+  //revalidatePath(`/create-item/${sale.id}`);
+  redirect(`/create-item/${sale.id}`);
+
   /* Since you are not updating the data displayed in any route yet,
    you do not want to clear this cache and trigger a new request to the server. 
    If you do display this data at some point you can do this with the revalidatePath function from Next.js */
