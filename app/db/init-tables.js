@@ -5,7 +5,7 @@ async function createUserTable(client) {
   try {
     const createTable = await client.sql`
     CREATE TABLE IF NOT EXISTS users (
-      user_id SERIAL PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       shopify_customer_id VARCHAR(255),
       username VARCHAR(255),
       email VARCHAR(255) UNIQUE,
@@ -15,19 +15,19 @@ async function createUserTable(client) {
       address VARCHAR(255),
       phone VARCHAR(20),
     );`;
-    console.log("created users table");
+    console.log("created user table");
   } catch (error) {
     console.error("error creating users table:", error);
   }
 }
 
 // Item Table
-async function createItemTable(client) {
+async function createItemsTable(client) {
   try {
     const createTable = await client.sql`
     CREATE TABLE IF NOT EXISTS items (
-      item_id SERIAL PRIMARY KEY,
-      seller_id INTEGER REFERENCES users(user_id),
+      id SERIAL PRIMARY KEY,
+      seller_id INTEGER REFERENCES users(users.id),
       title VARCHAR(255),
       description TEXT,
       start_price NUMERIC,
@@ -89,7 +89,7 @@ async function createItemCategoriesTable(client) {
 }
 
 // Image Table
-async function createImageTable(client) {
+async function createImagesTable(client) {
   try {
     const createTable = await client.sql`
     CREATE TABLE IF NOT EXISTS images (
@@ -104,7 +104,7 @@ async function createImageTable(client) {
 }
 
 // Transaction Table
-async function createTransactionTable(client) {
+async function createTransactionsTable(client) {
   try {
     const createTable = await client.sql`
     CREATE TABLE IF NOT EXISTS transactions (

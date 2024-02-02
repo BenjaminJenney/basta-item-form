@@ -1,85 +1,65 @@
 "use server";
-import { z } from "zod";
+
 import { basta } from "../../lib/basta";
+import { db } from "@/app/db/data";
 import { PutBlobResult } from "@vercel/blob";
-import { getMostRecentSaleId } from "../../db/data";
-import { v4 as uuidv4 } from "uuid";
-import { Image } from "@bastaai/basta-admin-js/types/image";
-import type { Item, Sale, SaleItem } from "@bastaai/basta-admin-js";
+import { redirect } from "next/navigation";
+import type { CreateItemInput } from "@bastaai/basta-admin-js/types/item";
+import { sql } from "@vercel/postgres";
 
-//2018-06-12T19:30
-const createItemFormValidator = z.object({
-  title: z.string({
-    required_error: "title is required",
-    invalid_type_error: "title must be a string",
-  }),
-  description: z.string().optional(),
-  medium: z.string({
-    required_error: "medium is required",
-    invalid_type_error: "title must be a string",
-  }),
-  dimensions: z
-    .string({
-      /* TODO: figure out a better way to form dimensions */
-      required_error: "dimensions are required",
-      invalid_type_error: "dimensions must be a string",
-    })
-    .refine(
-      (val) =>
-        (val[1] === "X" || val[1] === "x") &&
-        (val[3] === "X" || val[3] === "x"),
-      { message: "Format should be hXwXd i.e.: 100X50X2" }
-    ),
-  year: z.number({
-    required_error: "year is required",
-    invalid_type_error: "year must be a number",
-  }),
-
-  /* TODO: finish validation schema */
-});
-
-/** Returns a SaleItem and updates DB with create-item entries
- * @param blobs
- * @param formData
- * @remarks
- */
 export async function createBastaItemForSale(
   blobs: PutBlobResult[],
   saleid: string,
   itemFormData: FormData
 ) {
-  const itemData = Object.fromEntries(itemFormData);
   try {
-    const images: Image[] = [];
-    for (const blob of blobs) {
-      const image = {
-        id: uuidv4(),
-        order: 0,
-        url: blob.url,
-      };
-      images.push(image);
-    }
-    console.log("images: ", images);
+    const itemData = Object.fromEntries(itemFormData);
 
-    console.log(saleid);
-    const bastaItem: Item = await basta.item.create({
+    const createItemInput: CreateItemInput = {
       title: itemData.title as string,
       description: itemData.description as string,
-    });
-    bastaItem.images = images;
-    console.log("Item: ", bastaItem);
-    const saleItem: SaleItem = await basta.item.createItemForSale(
-      bastaItem,
-      saleid,
-      {
-        startingBid: Number(itemData.startBid as string),
-        reserve: Number(itemData.reserve as string),
-      }
-    );
+    };
+
+    const tmpSale = await basta.getSale(saleid);
     
-    console.log('saleItem: ', saleItem);
-    const sale: Sale = await basta.sale.get(saleid); 
-    console.log("sale.items: ", sale.items);
+    if (!tmpSale) {
+      console.error("tmpSale not found");
+      return;
+    }
+
+    const item = await basta.createItem(createItemInput);
+
+    if (!item) {
+      console.error("item not created");
+      return;
+    }
+
+    const saleItemId = await basta.addItemToSale(item, saleid, {
+      startingBid: Number(itemData.startBid as string),
+      reserve: Number(itemData.reserve as string),
+    });
+
+    if (!saleItemId) {
+      console.error("sale item not created");
+      return;
+    }
+
+    console.log("\n", "saleItemId: ", saleItemId, "\n\n");
+
+    //const sale = await basta.sale.get(saleid);
+    const sale = await basta.getSale(saleid);
+
+    if (!sale) {
+      console.error("sale not found");
+      return;
+    }
+
+    if (!(sale.items.length > tmpSale.items.length)) {
+      console.error("item not added to sale");
+      return;
+    }
+    const params = `saleId=${saleid}&itemId=${saleItemId}`;
+    redirect(`/index/?${params}`);
   } catch (error) {
     console.error("creating item for sale", error);
   }

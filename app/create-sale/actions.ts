@@ -2,37 +2,12 @@
 
 import { ClosingMethod } from "@bastaai/basta-admin-js";
 import { basta } from "../lib/basta";
-import { sql } from "@vercel/postgres";
-import { z } from "zod";
+import { db } from "@/app/db/data";
+import { FormSchema } from "./validator";
 import { DefaultSaleOptions } from "../definitions";
 import { redirect } from "next/navigation";
 import { Sale } from "@bastaai/basta-admin-js/types/sale";
 import { revalidatePath } from "next/cache";
-
-const FormSchema = z.object({
-  title: z.string(),
-  description: z.string(),
-  openDate: z.coerce
-    .string()
-    .refine((val) => val.length === 16, {
-      message: "datetime-local is wrong length",
-    })
-    .refine(
-      (val) =>
-        val[4] === "-" && val[7] === "-" && val[10] === "T" && val[13] === ":",
-      { message: "format is not HTMLInput datetime-local format" }
-    ),
-  closingDate: z.coerce
-    .string()
-    .refine((val) => val.length === 16, {
-      message: "datetime-local is wrong length",
-    })
-    .refine(
-      (val) =>
-        val[4] === "-" && val[7] === "-" && val[10] === "T" && val[13] === ":",
-      { message: "format is not HTMLInput datetime-local format" }
-    ),
-});
 
 const defaultSaleOptions = {
   currency: "USD",
@@ -58,33 +33,29 @@ export async function createBastaAuction(
     openDate: rawFormData.openingDate,
     closingDate: rawFormData.closingDate,
   });
+
+  /* The date input type in the form returns a string in the format "YYYY-MM-DDTHH:MM"
+     but basta wants ISO format "YYYY-MM-DDTHH:MM:SS.MSMSZ" */
   const zuluTimeSuffix = ":00.000Z";
+
   const input = {
     title: title,
     description: description,
     dates: {
-      openDate: openDate + zuluTimeSuffix,
+      openDate: openDate + zuluTimeSuffix, // It upsets me that 'openDate' and 'closingDate' are not named consistently
       closingDate: closingDate + zuluTimeSuffix,
     },
     ...options,
   };
-  //console.log('input: ', input);
-  const sale: Sale = await basta.sale.create(input);
 
-  if (!sale) {
+  const sale = await basta.createSale(input);
+
+  if (!sale?.id) {
     throw new Error("could not make sale!");
   }
-  console.log(`sale made successfully! your saleId is ${sale.id}`);
-  try {
-    await sql`INSERT INTO sale (saleId, created_date, open_date, close_date) VALUES (${
-      sale.id
-    }, ${new Date().toISOString()}, ${sale.dates.openDate}, ${
-      sale.dates.closingDate
-    });`;
-  } catch (error) {
-    console.error("insertion to sale table", error);
-  }
-  //revalidatePath(`/create-item/${sale.id}`);
+
+  await db.insertSale(sale) ? console.log("sale inserted") : console.error("sale not inserted");
+
   redirect(`/create-item/${sale.id}`);
 
   /* Since you are not updating the data displayed in any route yet,

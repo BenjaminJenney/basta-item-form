@@ -25,11 +25,12 @@ export default function ItemForm({saleid}: {saleid: string}) {
     });
     setBlob([...blobs, newBlob]);
   };
-  const createBastaItemForSaleWithBlob = createBastaItemForSale.bind(null, blobs, saleid);
+  
+  const createBastaItemForSaleWithBlobAndSaleId = createBastaItemForSale.bind(null, blobs, saleid);
 
   return (
     <div className="w-full">
-    <form encType="multipart/form-data" className="" action={createBastaItemForSaleWithBlob}> 
+    <form className="" action={createBastaItemForSaleWithBlobAndSaleId}> 
       <label htmlFor="images" className="">Images</label>
       <input
         id="images"
@@ -59,20 +60,6 @@ export default function ItemForm({saleid}: {saleid: string}) {
 
       <label htmlFor="description">description</label>
       <textarea id="description" name="description" defaultValue="your auction description" rows={5} cols={33} className="text-black"/>
-      {/*<label htmlFor="start-date">start date</label> 
-      <input
-        id="start-date"
-        type="datetime-local"
-        placeholder="start-date"
-        name="start-date"
-  />
-      <label htmlFor="end-date">start date</label>
-      <input
-        id="end-date"
-        type="datetime-local"
-        placeholder="end-date"
-        name="end-date"
-  />*/}
       <label htmlFor="start-bid">start bid</label>
       <input
         id="start-bid"
