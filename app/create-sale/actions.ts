@@ -6,8 +6,7 @@ import { db } from "@/app/db/data";
 import { FormSchema } from "./validator";
 import { DefaultSaleOptions } from "../definitions";
 import { redirect } from "next/navigation";
-import { Sale } from "@bastaai/basta-admin-js/types/sale";
-import { revalidatePath } from "next/cache";
+
 
 const defaultSaleOptions = {
   currency: "USD",
@@ -61,25 +60,17 @@ export async function createBastaAuction(
   /* Since you are not updating the data displayed in any route yet,
    you do not want to clear this cache and trigger a new request to the server. 
    If you do display this data at some point you can do this with the revalidatePath function from Next.js */
-  //redirect('/create-item');
-
-  /* {
-  accountId: 'b8a7f554-30f2-415a-afbd-9e3fe5a033c9',
-  closingTimeCountdown: 60000,
-  dates: {
-    __typename: 'SaleDates',
-    closingDate: '2024-01-30T08:00:00Z',
-    openDate: '2024-01-29T08:02:00Z'
-  },
-  id: 'ce01e56e6-1c14660000070004',
-  images: [],
-  items: [],
-  participants: [],
-  sequenceNumber: 0,
-  title: 'test sale',
-  closingMethod: 'OVERLAPPING',
-  description: 'my awesome sale',
-  incrementTable: { __typename: 'BidIncrementTable', rules: [ [Object], [Object] ] },
-  status: 'UNPUBLISHED'
-}*/
 }
+
+export const createCollectionMutation = /* GraphQL */ `
+  mutation createCollection(
+    $input: CollectionInput!
+    $metafields: [MetafieldInput!]!
+  ) {
+    collectionCreate(input: $input, metafields: $metafields) {
+      collection {
+        id
+      }
+    }
+  }
+`;

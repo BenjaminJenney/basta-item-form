@@ -55,6 +55,14 @@ class DB {
       console.error("select items", error);
     }
   }
+  async getImages(saleId:string, itemId: string) {
+    try {
+      const images = await sql`SELECT * FROM image WHERE item_id = ${itemId} AND sale_id = ${saleId}`;
+      return images;
+    } catch (error) {
+      console.error("select images", error);
+    }
+  }
   async insertSale(sale: Sale) {
     try {
       const saleId = await sql`INSERT INTO sale (id) VALUES (${sale.id}) RETURNING id`;
@@ -66,20 +74,31 @@ class DB {
   async insertItem(item: SaleItem) {
     try {
       const itemId = await sql`INSERT INTO item (id, sale_id, title, description, date_created) 
-      VALUES (${item.id}, ${item.saleId}, ${item.title}, ${item.description}, ${new Date().toISOString()}) 
-      RETURNING itemid`;
-      return itemId;
+      VALUES (${item.id}, ${item.saleId}, ${item.title}, ${item.description}, ${new Date().toISOString()})
+      RETURNING id`;
+      console.log("itemId: ", itemId.rows[0].id)
+      return itemId.rows[0].id;
     } catch (error) {
       console.error("insert item", error);
+    }
+  }
+  async insertImage(blob: PutBlobResult, itemId: string, saleId: string) {
+    try {
+      const imageId = await sql`INSERT INTO image (id, item_id, sale_id, url, date_created) 
+      VALUES (${uuid()}, ${itemId}, ${saleId},  ${blob.url}, ${new Date().toISOString()})
+      RETURNING id`;
+      return imageId;
+    } catch (error) {
+      console.error("insert image", error);
     }
   }
   async insertImages(blobs: PutBlobResult[], itemId: string, saleId: string) {
     try {
       const imageIds = blobs.map(async (blob) => {
         const imageId = await sql`INSERT INTO image (id, item_id, sale_id, url, date_created) 
-        VALUES (${uuid()}, ${itemId}, ${saleId},  ${blob.url}, ${new Date().toISOString()}) 
-        RETURNING imageid`;
-        return imageId;
+        VALUES (${uuid()}, ${itemId}, ${saleId},  ${blob.url}, ${new Date().toISOString()})
+        RETURNING id`;
+        return imageId.rows[0].id;
       });
       return imageIds;
     } catch (error) {

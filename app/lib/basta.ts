@@ -5,14 +5,15 @@ import type { Item } from "@bastaai/basta-admin-js/types/item";
 import type { CreateItemInput } from "@bastaai/basta-admin-js/types/item";
 import type { Sale } from "@bastaai/basta-admin-js/types/sale";
 
+if (!process.env.BASTA_ACCOUNT_ID || !process.env.BASTA_SECRET_KEY) { 
+  throw new Error('missing Basta credentials for initBasta');
+}
+
+const basta_ = initBasta({ accountId: process.env.BASTA_ACCOUNT_ID, secretKey: process.env.BASTA_SECRET_KEY });
 class Basta {
   readonly basta: IBastaAdmin;
-
   constructor() {
-    if (!process.env.BASTA_ACCOUNT_ID || !process.env.BASTA_SECRET_KEY) { 
-      throw new Error('missing Basta credentials for initBasta');
-    }
-    this.basta = initBasta({ accountId: process.env.BASTA_ACCOUNT_ID, secretKey: process.env.BASTA_SECRET_KEY });
+    this.basta = basta_;
   }
   /** Returns a new Sale 
    * 
@@ -106,7 +107,7 @@ class Basta {
 }) {
     try {
       const saleItem: SaleItem = await this.basta.item.createItemForSale(item, saleId, options);
-      return saleItem.id;
+      return saleItem;
     } catch (error) {
       console.error("creating item for sale", error);
     }

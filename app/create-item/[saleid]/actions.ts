@@ -6,6 +6,8 @@ import { PutBlobResult } from "@vercel/blob";
 import { redirect } from "next/navigation";
 import type { CreateItemInput } from "@bastaai/basta-admin-js/types/item";
 import { sql } from "@vercel/postgres";
+import { isRedirectError } from "next/dist/client/components/redirect";
+import { revalidatePath } from "next/cache";
 
 export async function createBastaItemForSale(
   blobs: PutBlobResult[],
@@ -21,7 +23,7 @@ export async function createBastaItemForSale(
     };
 
     const tmpSale = await basta.getSale(saleid);
-    
+
     if (!tmpSale) {
       console.error("tmpSale not found");
       return;
@@ -34,18 +36,23 @@ export async function createBastaItemForSale(
       return;
     }
 
-    const saleItemId = await basta.addItemToSale(item, saleid, {
+    const saleItem = await basta.addItemToSale(item, saleid, {
       startingBid: Number(itemData.startBid as string),
       reserve: Number(itemData.reserve as string),
     });
 
-    if (!saleItemId) {
+    if (!saleItem) {
       console.error("sale item not created");
       return;
     }
 
-    console.log("\n", "saleItemId: ", saleItemId, "\n\n");
+    console.log("\n", "saleItem: ", saleItem, "\n\n");
 
+    const saleItemId = await db.insertItem(saleItem);
+    if (!saleItemId) {
+      console.error("sale item not inserted into database");
+      return;
+    }
     //const sale = await basta.sale.get(saleid);
     const sale = await basta.getSale(saleid);
 
@@ -58,9 +65,22 @@ export async function createBastaItemForSale(
       console.error("item not added to sale");
       return;
     }
-    const params = `saleId=${saleid}&itemId=${saleItemId}`;
-    redirect(`/index/?${params}`);
+
+    const imageIds = await db.insertImages(blobs, saleItemId, saleid);
+
+    if (!imageIds?.length) {
+      console.error("images not inserted into database");
+      return;
+    }
+
+    const queryString = `?saleid=${saleid}&saleItemId=${saleItemId}`;
+
+    revalidatePath(`/home${queryString}`);
+    redirect(`/home${queryString}`);
   } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error("creating item for sale", error);
   }
 }
